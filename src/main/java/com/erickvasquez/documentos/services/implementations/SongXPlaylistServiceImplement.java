@@ -12,7 +12,7 @@ import com.erickvasquez.documentos.services.SongXPlaylistService;
 @Service
 public class SongXPlaylistServiceImplement  implements SongXPlaylistService{
 	
-	Autowired
+	@Autowired
 	private SongxPlayListRepository repository;
 
 	@Override
