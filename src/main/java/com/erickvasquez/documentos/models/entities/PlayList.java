@@ -22,7 +22,7 @@ import lombok.ToString;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "playlist")
+@Table(name = "playlists")
 @ToString(exclude = {"songxplaylist"})
 public class PlayList {
 
