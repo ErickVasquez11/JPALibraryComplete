@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import com.erickvasquez.documentos.models.entities.User;
 
-
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -27,6 +27,7 @@ public class JWTTools {
 	@Value("${jwt.exptime}")
 	private Integer exp;
 
+	//GenerateToken
 	public String generateToken(User user) {
 		Map<String, Object> claims = new HashMap<>();
 		
@@ -37,5 +38,36 @@ public class JWTTools {
 			.setExpiration(new Date(System.currentTimeMillis() + exp))
 			.signWith(Keys.hmacShaKeyFor(secret.getBytes()))
 			.compact();
+	}
+	
+	//VerifyToken
+	public Boolean verifyToken(String token) {
+		try {
+			JwtParser parser = Jwts.parserBuilder()
+					.setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+					.build();
+			
+			parser.parse(token);
+			return true;
+			} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	//GetUsernameFrom
+	public String getUsernameFrom(String token) {
+		try {
+			JwtParser parser = Jwts.parserBuilder()
+					.setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+					.build();
+				
+			return parser.parseClaimsJws(token)
+					.getBody()
+					.getSubject();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}		
 	}
 }
