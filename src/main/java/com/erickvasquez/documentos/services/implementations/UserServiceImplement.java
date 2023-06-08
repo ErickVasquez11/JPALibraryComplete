@@ -51,6 +51,7 @@ public class UserServiceImplement  implements UserService{
 						);
 		userRepository.save(user);
 	}
+	
 	@Override
 	public void update(UpdateUserDTO userInfo) throws Exception {
 		// TODO Auto-generated method stub
@@ -81,6 +82,11 @@ public class UserServiceImplement  implements UserService{
 	}
 	
 	//Implements
+
+	@Override
+	public Boolean comparePassword(String toCompare, String currents) {
+		return passwordEncoder.matches(toCompare, currents);
+	}
 	
 	@Autowired
 	private  JWTTools jwtTools;
