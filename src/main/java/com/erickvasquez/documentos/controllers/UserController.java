@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,11 +49,12 @@ public class UserController {
 	private RequestErrorHandler errorHandler;
 	
 	@PostMapping("/login")
-    public ResponseEntity<?> login(@ModelAttribute @Valid LoginDTO info, BindingResult validations) {
+    public ResponseEntity<?> login(@RequestBody @Valid LoginDTO info, BindingResult validations) {
+        System.out.println(info.getId());
+        System.out.println(info.getPassword());
         if(validations.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
         User user = userService.findOneById(info.getId());
 
         if(user == null) {
@@ -70,7 +72,25 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-	
+
+	@PostMapping("/auth/singup")
+    public ResponseEntity<?> register(
+            @ModelAttribute @Valid RegisterUserDTO data, BindingResult validations) {
+        if (validations.hasErrors()) {
+            return new ResponseEntity<>(
+                    errorHandler.mapErrors(validations.getFieldErrors()), HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            userService.save(data);
+            return new ResponseEntity<>(new MessageDTO("Excellent! user created"), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new MessageDTO("User duplicate"),HttpStatus.CONFLICT);
+        }
+    }
+
+
+
 	@GetMapping("")
 	public ResponseEntity<?> getUsers() {
 		List<User> users = userService.findAll();
