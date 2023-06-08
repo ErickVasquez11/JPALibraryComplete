@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.erickvasquez.documentos.models.dtos.users.RegisterUserDTO;
 import com.erickvasquez.documentos.models.dtos.users.UpdateUserDTO;
+import com.erickvasquez.documentos.models.entities.Token;
 import com.erickvasquez.documentos.models.entities.User;
 
 public interface UserService {
@@ -15,4 +16,10 @@ public interface UserService {
 	  List<User> findAll();
 
 	User findOneByUsernameOrEmail(String userData);
+	
+	//Token management
+	Token registerToken(User user) throws Exception;
+	Boolean isTokenValid(User user, String token);
+	void cleanTokens(User user) throws Exception;
+	
 }

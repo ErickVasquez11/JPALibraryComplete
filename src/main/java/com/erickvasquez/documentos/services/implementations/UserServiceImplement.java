@@ -9,9 +9,14 @@ import org.springframework.stereotype.Service;
 
 import com.erickvasquez.documentos.models.dtos.users.RegisterUserDTO;
 import com.erickvasquez.documentos.models.dtos.users.UpdateUserDTO;
+import com.erickvasquez.documentos.models.entities.Token;
 import com.erickvasquez.documentos.models.entities.User;
+import com.erickvasquez.documentos.repositories.TokenRepository;
 import com.erickvasquez.documentos.repositories.UserRepository;
 import com.erickvasquez.documentos.services.UserService;
+import com.erickvasquez.documentos.utils.JWTTools;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserServiceImplement  implements UserService{
@@ -74,4 +79,58 @@ public class UserServiceImplement  implements UserService{
 		
 		return userRepository.findOneByUsernameOrEmail(userData, userData);
 	}
+	
+	//Implements
+	
+	@Autowired
+	private  JWTTools jwtTools;
+	
+	@Autowired
+	private TokenRepository tokenRepository;
+	
+	@Override
+	@Transactional(rollbackOn = Exception.class)
+	public Token registerToken(User user) throws Exception {
+		cleanTokens(user);
+		
+		String tokenString = jwtTools.generateToken(user);
+		Token token = new Token(tokenString, user);
+		
+		tokenRepository.save(token);
+		
+		return token;
+		
+	}
+
+	@Override
+	public Boolean isTokenValid(User user, String token) {
+		try {
+			cleanTokens(user);
+			List<Token> tokens = tokenRepository.findByUserAndActive(user, true);
+			
+			tokens.stream()
+				.filter(tk -> tk.getContent().equals(token))
+				.findAny()
+				.orElseThrow(() -> new Exception());
+			
+			return true;
+		} catch (Exception e) {
+			return false;
+		}		
+	}
+
+	@Override
+	@Transactional(rollbackOn = Exception.class)
+	public void cleanTokens(User user) throws Exception {
+		List<Token> tokens = tokenRepository.findByUserAndActive(user, true);
+		
+		tokens.forEach(token -> {
+			if(!jwtTools.verifyToken(token.getContent())) {
+				token.setActive(false);
+				tokenRepository.save(token);
+			}
+		});
+		
+	}
+
 }
