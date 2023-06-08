@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Data
-@ToString(exclude = {"playlists"})
+@ToString(exclude = {"playlists", "tokens"})
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
@@ -54,4 +54,8 @@ public class User {
 		this.email = email;
 		this.password = password;
 	}
+	
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+	@JsonIgnore
+	private List<Token> tokens;
 }
