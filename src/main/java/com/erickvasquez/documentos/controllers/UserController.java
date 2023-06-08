@@ -14,26 +14,34 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.erickvasquez.documentos.models.dtos.response.MessageDTO;
+import com.erickvasquez.documentos.models.dtos.tokens.TokenDTO;
 import com.erickvasquez.documentos.models.dtos.users.ChangePasswordDTO;
 import com.erickvasquez.documentos.models.dtos.users.RegisterUserDTO;
+import com.erickvasquez.documentos.models.dtos.users.LoginDTO;
 import com.erickvasquez.documentos.models.dtos.users.UpdateUserDTO;
 import com.erickvasquez.documentos.models.entities.PlayList;
+import com.erickvasquez.documentos.models.entities.Token;
 import com.erickvasquez.documentos.models.entities.User;
 import com.erickvasquez.documentos.services.PlaylistService;
 import com.erickvasquez.documentos.services.UserService;
+import com.erickvasquez.documentos.utils.JWTTools;
 import com.erickvasquez.documentos.utils.RequestErrorHandler;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/users")
 @CrossOrigin("*")
 public class UserController {
+	@Autowired
+	private JWTTools jwtTools;
 
 	@Autowired
 	private UserService userService;
@@ -43,6 +51,31 @@ public class UserController {
 	
 	@Autowired
 	private RequestErrorHandler errorHandler;
+	
+	@PostMapping("/auth/login")
+	public ResponseEntity<?> login(@RequestBody @Valid LoginDTO info, BindingResult validations) {
+		System.out.println(info.getId());
+		System.out.println(info.getPassword());
+		if(validations.hasErrors()) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		User user = userService.findOneById(info.getId());	
+		
+		if(user == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		
+		if(!userService.comparePassword(info.getPassword(), user.getPassword())) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}	
+		try {
+			Token token = userService.registerToken(user);
+			return new ResponseEntity<>(new TokenDTO(token), HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 	
 	@PostMapping("/auth/singup")
 	public ResponseEntity<?> register(
@@ -80,15 +113,19 @@ public class UserController {
 	
 	
 	@GetMapping("/playlists")
-	public ResponseEntity<?> getPlaylistsByUser(@RequestParam("users") String userData, @RequestParam(required = false) String title){
-		User user = userService.findOneByUsernameOrEmail(userData);
+	public ResponseEntity<?> getPlaylistsByUser(HttpServletRequest request,@RequestParam(required = false) String title){
+		String tokenHeader = request.getHeader("Authorization");
+		String token = tokenHeader.substring(7);
+		String username = jwtTools.getUsernameFrom(token);
+		
+		User user = userService.findOneByUsernameOrEmail(username);
 		if(user == null) {
 				return new ResponseEntity<>(
 						new MessageDTO("user not found"), HttpStatus.NOT_FOUND);			
 		}
 		
 		if(title != null) {
-			List<PlayList> playlist = playlistService.findTitle(userData);
+			List<PlayList> playlist = playlistService.findTitle(username);
 			if(playlist == null) {
 				return new ResponseEntity<>(
 						new MessageDTO("Playlist not found"), HttpStatus.NOT_FOUND);

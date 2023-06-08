@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,8 +33,10 @@ import com.erickvasquez.documentos.services.PlaylistService;
 import com.erickvasquez.documentos.services.SongService;
 import com.erickvasquez.documentos.services.SongXPlaylistService;
 import com.erickvasquez.documentos.services.UserService;
+import com.erickvasquez.documentos.utils.JWTTools;
 import com.erickvasquez.documentos.utils.RequestErrorHandler;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -41,7 +44,8 @@ import jakarta.validation.Valid;
 @CrossOrigin("*")
 public class PlayListController {
 
-
+	@Autowired
+	private JWTTools jwtTools;
 	@Autowired
 	private PlaylistService playlistService;
 	@Autowired
@@ -74,13 +78,17 @@ public class PlayListController {
 	// Create playlist of user
 	@PostMapping("/createplaylist")
 	public ResponseEntity<?> createPlayList(
-			@ModelAttribute @Valid SavePlayListDTO data, BindingResult validations) {
+			@RequestBody @Valid SavePlayListDTO data, HttpServletRequest request,BindingResult validations) {
+		
+		String tokenHeader = request.getHeader("Authorization");
+		String token = tokenHeader.substring(7);
+		String username = jwtTools.getUsernameFrom(token);
 		if (validations.hasErrors()) {
 			return new ResponseEntity<>(
 					errorHandler.mapErrors(validations.getFieldErrors()), HttpStatus.BAD_REQUEST);
 		}
 		
-		User user = userService.findOneById(data.getUserCode());
+		User user = userService.findOneById(username);
 		if (user == null)
 			return new ResponseEntity<>(new MessageDTO("Warn! user not found"), HttpStatus.NOT_FOUND);
 		
