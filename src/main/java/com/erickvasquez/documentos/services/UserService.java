@@ -13,14 +13,14 @@ public interface UserService {
 	  void update(UpdateUserDTO userInfo) throws Exception;
 	  void deleteById(String code) throws Exception;
 	  User findOneById(String code);
+	  Boolean comparePassword(String toCompare, String current);
 	  List<User> findAll();
 
 	User findOneByUsernameOrEmail(String userData);
 	
-	//Token management
 	Token registerToken(User user) throws Exception;
 	Boolean isTokenValid(User user, String token);
 	void cleanTokens(User user) throws Exception;
-	Boolean comparePassword(String toCompare, String current);
 	
+	User findUserAuthenticated();
 }

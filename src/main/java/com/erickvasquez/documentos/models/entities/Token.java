@@ -3,8 +3,6 @@ package com.erickvasquez.documentos.models.entities;
 import java.util.Date;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -20,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name= "token")
+@Table(name = "token")
 public class Token {
 	
 	@Id
@@ -39,12 +37,16 @@ public class Token {
 	
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "user_code")
-	@JsonIgnore
 	private User user;
-	
+
 	public Token(String content, User user) {
 		super();
 		this.content = content;
 		this.user = user;
 	}
+	
+	
+	
+	
+
 }

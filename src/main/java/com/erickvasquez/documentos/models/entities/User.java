@@ -22,11 +22,12 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Data
-@ToString(exclude = {"playlists", "tokens"})
+@ToString(exclude = {"playlists","tokens"})
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
 public class User implements UserDetails{
+	private static final long serialVersionUID = 1460435087476558985L;
 
 
 	@Id
@@ -47,9 +48,14 @@ public class User implements UserDetails{
 	@Column(name = "active", insertable = false)
 	private Boolean active;
 	
+	
 	@OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
 	@JsonIgnore
 	private List<PlayList> playlists;
+	
+	@OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
+	@JsonIgnore
+	private List<Token>tokens;
 	
 
 	public User(String username, String email, String password) {
@@ -58,41 +64,35 @@ public class User implements UserDetails{
 		this.email = email;
 		this.password = password;
 	}
-	
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-	@JsonIgnore
-	private List<Token> tokens;
-	
-	private static final long serialVersionUID = 1460435087476558985L;
-
 
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
+
 	@Override
 	public boolean isAccountNonExpired() {
-		// TODO Auto-generated method stub
 		return false;
 	}
+
 
 	@Override
 	public boolean isAccountNonLocked() {
-		// TODO Auto-generated method stub
 		return false;
 	}
+
 
 	@Override
 	public boolean isCredentialsNonExpired() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
+
 	@Override
 	public boolean isEnabled() {
-		// TODO Auto-generated method stub
-		return this.active;
-	}}
+		return false;
+	}
+	
+}
