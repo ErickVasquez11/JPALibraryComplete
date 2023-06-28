@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -19,20 +20,25 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.erickvasquez.documentos.models.dtos.response.MessageDTO;
+import com.erickvasquez.documentos.models.dtos.songs.PageDTO;
 import com.erickvasquez.documentos.models.dtos.songs.SaveSongDTO;
 import com.erickvasquez.documentos.models.dtos.songs.SongAllDTO;
 import com.erickvasquez.documentos.models.dtos.songs.UpdateSongDTO;
 import com.erickvasquez.documentos.models.entities.Song;
 import com.erickvasquez.documentos.services.SongService;
+import com.erickvasquez.documentos.services.UserService;
 import com.erickvasquez.documentos.utils.RequestErrorHandler;
 
+import jakarta.security.auth.message.callback.PrivateKeyCallback.Request;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/song/")
 @CrossOrigin("*")
 public class SongController {
-
+	
+	@Autowired
+	private UserService userService;
 	@Autowired
 	private SongService songService;
 	@Autowired
@@ -40,25 +46,41 @@ public class SongController {
 	
 	//rute /song con el buscador
 	@GetMapping("")
-	public ResponseEntity<?> getSongs(@RequestParam(required = false) String title) {
+	public ResponseEntity<?> getSongs(@RequestParam(required = false) String title, 
+			@RequestParam(name = "page", defaultValue = "0") int page,
+			@RequestParam(value = "size", defaultValue = "20") int size) {
+	
 	    if (title != null && !title.isEmpty()) {
-	        List<Song> songs = songService.findFragmentTitle(title);
+	        Page<Song> songs = songService.findByTitle(title, page, size);
+	        List<Song> soongs = songs.getContent();
 	        List<SongAllDTO> songDTOs = new ArrayList<>();
-	        for (Song song : songs) {
+	        for (Song song : soongs) {
 	            String duration = formatDuration(song.getDuration());
 	            SongAllDTO songDTO = new SongAllDTO(song.getCode(), song.getTitle(), duration);
 	            songDTOs.add(songDTO);
 	        }
-	        return new ResponseEntity<>(songDTOs, HttpStatus.OK);
+	        PageDTO<SongAllDTO> response = new PageDTO<SongAllDTO>(
+	        		songDTOs, songs.getTotalPages(),
+	        		songs.hasNext(),
+	        		songs.hasPrevious()
+	        		);
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+	        
 	    } else {
-	        List<Song> songs = songService.findAll();
+	        Page<Song> songs = songService.getAll(page, size);
+	        List<Song> soongs = songs.getContent();
 	        List<SongAllDTO> songDTOs = new ArrayList<>();
-	        for (Song song : songs) {
+	        for (Song song : soongs) {
 	            String duration = formatDuration(song.getDuration());
 	            SongAllDTO songDTO = new SongAllDTO(song.getCode(), song.getTitle(), duration);
 	            songDTOs.add(songDTO);
 	        }
-	        return new ResponseEntity<>(songDTOs, HttpStatus.OK);
+	        PageDTO<SongAllDTO> response = new PageDTO<SongAllDTO>(
+	        		songDTOs, songs.getTotalPages(),
+	        		songs.hasNext(),
+	        		songs.hasPrevious()
+	        		);
+	        return new ResponseEntity<>(response, HttpStatus.OK);
 	    }
 	}
 

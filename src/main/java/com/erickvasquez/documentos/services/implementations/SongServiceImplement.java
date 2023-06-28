@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.erickvasquez.documentos.models.dtos.songs.SaveSongDTO;
@@ -14,7 +17,7 @@ import com.erickvasquez.documentos.services.SongService;
 
 @Service
 public class SongServiceImplement implements SongService{
-
+	
 	@Autowired
 	private SongRepository songRepository;
 
@@ -71,5 +74,16 @@ public class SongServiceImplement implements SongService{
 	public List<Song> findFragmentTitle(String title) {
 		return songRepository.findByTitleContaining(title);
 	}
-	
+
+	@Override
+	public Page<Song> getAll(int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return songRepository.findAll(pageable);
+	}
+
+	@Override
+	public Page<Song> findByTitle(String title, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		return songRepository.findByTitleContaining(title, pageable);
+	}
 }

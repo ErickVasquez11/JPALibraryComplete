@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.erickvasquez.documentos.models.dtos.playlists.SavePlayListDTO;
@@ -30,24 +33,7 @@ public class PlayListServiceImplement implements PlaylistService {
 		playlistRepository.save(playlist);
 	}
 
-	@Override
-	public void update(UpdatePlayListDTO playlistInfo) throws Exception {
-		UUID _code = UUID.fromString(playlistInfo.getCode());
-		PlayList playlist = playlistRepository.findById(_code).orElse(null);
-		
-		if (playlist == null) return;
-		
-		playlist.setTitle(playlistInfo.getTitle());
-		playlist.setDescription(playlistInfo.getDescription());
-		
-		playlistRepository.save(playlist);
-	}
 
-	@Override
-	public void deleteOneById(String code) throws Exception {
-		UUID _code = UUID.fromString(code);
-		playlistRepository.deleteById(_code);
-	}
 
 	@Override
 	public PlayList findOneById(String code) {
@@ -59,15 +45,17 @@ public class PlayListServiceImplement implements PlaylistService {
 		}
 	}
 
-	@Override
-	public List<PlayList> findAll() {
-		return playlistRepository.findAll();
-	}
-	
-	// user for playlist
+
 		@Override
-		public List<PlayList> findTitle(String title) {
-			return playlistRepository.findByTitleContaining(title);
+		public Page<PlayList> getAll(User user, int page, int size) {
+			Pageable pageable = PageRequest.of(page, size);
+			return playlistRepository.findAllByUser(user, pageable);
+		}
+
+		@Override
+		public Page<PlayList> findByTitle(User user, String title, int page, int size) {
+			Pageable pageable = PageRequest.of(page, size);
+			return playlistRepository.findAllByUserAndTitleContaining(user, title, pageable);
 		}
 		
 }

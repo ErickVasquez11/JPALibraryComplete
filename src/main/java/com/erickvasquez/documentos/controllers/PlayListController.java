@@ -1,4 +1,4 @@
-package com.erickvasquez.documentos.controllers;
+		package com.erickvasquez.documentos.controllers;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -58,12 +58,6 @@ public class PlayListController {
 	private RequestErrorHandler errorHandler;
 	
 	
-	@GetMapping("")
-	public ResponseEntity<?> getPlayLists() {
-		List<PlayList> playlist = playlistService.findAll();
-		return new ResponseEntity<>(playlist, HttpStatus.OK);
-	}
-	
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getPlayList(@PathVariable String id) {
 		PlayList playlist = playlistService.findOneById(id);
@@ -83,6 +77,7 @@ public class PlayListController {
 		String tokenHeader = request.getHeader("Authorization");
 		String token = tokenHeader.substring(7);
 		String username = jwtTools.getUsernameFrom(token);
+		
 		if (validations.hasErrors()) {
 			return new ResponseEntity<>(
 					errorHandler.mapErrors(validations.getFieldErrors()), HttpStatus.BAD_REQUEST);
@@ -182,29 +177,7 @@ public class PlayListController {
 	
 	
 	
-	@PutMapping("")
-	public ResponseEntity<?> updatePlayList(
-			@ModelAttribute @Valid UpdatePlayListDTO data, BindingResult validations) {
-		if (validations.hasErrors()) {
-			return new ResponseEntity<>(
-					errorHandler.mapErrors(validations.getFieldErrors()), HttpStatus.BAD_REQUEST);
-		}
-		
-		try {
-			playlistService.update(data);
-			return new ResponseEntity<>(new MessageDTO("Excellent! playlist updated"), HttpStatus.OK);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	
 	}
 	
-	@DeleteMapping("/{id}")
-	public ResponseEntity<?> deletePlayList(@PathVariable String id) {
-		try {
-			playlistService.deleteOneById(id);
-			return new ResponseEntity<>(new MessageDTO("Excellent! playlist deleted"), HttpStatus.OK);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-}
+	
