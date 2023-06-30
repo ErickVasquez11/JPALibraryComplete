@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.erickvasquez.documentos.models.dtos.playlists.AllSongDTO;
@@ -24,6 +26,7 @@ import com.erickvasquez.documentos.models.dtos.playlists.SavePlayListDTO;
 import com.erickvasquez.documentos.models.dtos.playlists.UpdatePlayListDTO;
 import com.erickvasquez.documentos.models.dtos.response.MessageDTO;
 import com.erickvasquez.documentos.models.dtos.response.PlayListSongsDTO;
+import com.erickvasquez.documentos.models.dtos.songs.PageDTO;
 import com.erickvasquez.documentos.models.dtos.songxplaylist.SaveSongXPlaylistDTO;
 import com.erickvasquez.documentos.models.entities.PlayList;
 import com.erickvasquez.documentos.models.entities.Song;
@@ -148,7 +151,10 @@ public class PlayListController {
 	// obtenes la lista de canciones del usuario (lista)
 	@GetMapping("/songs/{id}")
 
-	public ResponseEntity<?> getPlayListSongs(@PathVariable String id) {
+	public ResponseEntity<?> getPlayListSongs(@PathVariable String id,
+			@RequestParam(name = "page", defaultValue = "0") int page,
+			@RequestParam(value = "size", defaultValue = "20") int size) {
+		
 		PlayList playlist = playlistService.findOneById(id);
 		
 		if (playlist == null)
@@ -169,8 +175,16 @@ public class PlayListController {
 				count += songXPlaylist.getSong().getDuration();
 		}
 		
+		Page<AllSongDTO> pageSong = playlistService.getPaginatedList(listsongs, page, size);
 		
-		PlayListSongsDTO response = new PlayListSongsDTO(playlist, listsongs, formatDuration(count));
+		PageDTO<AllSongDTO> responsePag= new PageDTO<AllSongDTO>(
+				pageSong.getContent(), 
+				pageSong.getTotalPages(),
+				pageSong.hasNext(),
+				pageSong.hasPrevious()
+        		);
+		
+		PlayListSongsDTO response = new PlayListSongsDTO(playlist, responsePag, formatDuration(count));
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	

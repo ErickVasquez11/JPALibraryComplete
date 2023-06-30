@@ -3,6 +3,7 @@ package com.erickvasquez.documentos.models.dtos.response;
 import java.util.List;
 
 import com.erickvasquez.documentos.models.dtos.playlists.AllSongDTO;
+import com.erickvasquez.documentos.models.dtos.songs.PageDTO;
 import com.erickvasquez.documentos.models.entities.PlayList;
 
 import lombok.AllArgsConstructor;
@@ -13,6 +14,6 @@ import lombok.Data;
 public class PlayListSongsDTO {
 
 	private PlayList playlist;
-	private List<AllSongDTO>song;
+	private PageDTO<AllSongDTO>song;
 	private String total;
 }

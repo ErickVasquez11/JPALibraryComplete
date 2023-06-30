@@ -5,10 +5,12 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.erickvasquez.documentos.models.dtos.playlists.AllSongDTO;
 import com.erickvasquez.documentos.models.dtos.playlists.SavePlayListDTO;
 import com.erickvasquez.documentos.models.dtos.playlists.UpdatePlayListDTO;
 import com.erickvasquez.documentos.models.entities.PlayList;
@@ -58,4 +60,14 @@ public class PlayListServiceImplement implements PlaylistService {
 			return playlistRepository.findAllByUserAndTitleContaining(user, title, pageable);
 		}
 		
+		@Override
+		public Page<AllSongDTO> getPaginatedList(List<AllSongDTO> list, int page, int size) {
+			int startIndex = page * size;
+	        int endIndex = Math.min(startIndex + size, list.size());
+	        
+	        List<AllSongDTO> sublist = list.subList(startIndex, endIndex);
+	        PageRequest pageRequest = PageRequest.of(page, size);
+	        
+	        return new PageImpl<>(sublist, pageRequest, list.size());
+		}
 }
